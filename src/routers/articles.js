@@ -1,20 +1,21 @@
 const express = require("express");
+
 const router = express.Router();
-const postsController = require("../controllers/postsControllers.js");
+const articlesController = require("../controllers/articlesControllers.js");
 
 // Index - Recupera la lista di tutti i post
-router.get("/", postsController.index);
+router.get("/", articlesController.index);
 
 // Show - Recupera i dettagli di un post specifico per ID
-router.get("/:id", postsController.show);
+router.get("/:id", articlesController.show);
 
 // Store - Crea un nuovo post
-router.post("/", postsController.store);
+router.post("/", articlesController.store);
 
 // Update - Aggiorna un post esistente tramite ID
-router.put("/:id", postsController.update);
+router.put("/:id", articlesController.update);
 
 // Delete - Elimina un post tramite ID
-router.delete("/:id", postsController.destroy);
+router.delete("/:id", articlesController.destroy);
 
 module.exports = router;

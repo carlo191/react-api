@@ -12,7 +12,7 @@ function show(req, res) {
   const post = articlesData.find((article) => article.id === id);
 
   if (!post) {
-    const err = new Error(`id post not found`);
+    const err = new Error(`id article not found`);
     err.code = 404;
     throw err;
   }
@@ -53,7 +53,7 @@ function update(req, res) {
 
   /* Faccio il controllo*/
   if (!article) {
-    const err = new Error(`id post not found`);
+    const err = new Error(`id article not found`);
     err.code = 404;
     throw err;
   }
@@ -77,7 +77,7 @@ function destroy(req, res) {
   const article = articlesData.find((article) => article.id === id);
 
   if (!article) {
-    const err = new Error(`id post not found`);
+    const err = new Error(`id article not found`);
     err.code = 404;
     throw err;
   }

@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from "react";
+console.log(`ok server`);
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const port = 3000;
+app.use(express.static("public"));
+app.use(cors());
+app.use(express.json());
+const articlesRouter = require("./routers/articles");
 
+app.get("/", (req, res) => {
+  res.send("Server del mio blog");
+});
+app.use("/posts", articlesRouter);
+
+app.listen(port, () => {
+  console.log(`In ascolto su port  ${port}`);
+});
 function App() {
   const [article, setArticle] = useState({
     title: "",
@@ -90,7 +107,9 @@ function App() {
           <li key={index}>
             <h3>{art.title}</h3>
             <p>{art.content}</p>
-            {art.image && <img src={art.image} alt={art.title} style={{ width: "100px" }} />}
+            {art.image && (
+              <img src={art.image} alt={art.title} style={{ width: "100px" }} />
+            )}
             <p>Categoria: {art.category}</p>
             <p>Pubblicato: {art.isPublished ? "Sì" : "No"}</p>
             <button onClick={() => removeArticle(index)}>
@@ -104,4 +123,3 @@ function App() {
 }
 
 export default App;
-
