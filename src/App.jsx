@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const App = () => {
@@ -19,8 +18,13 @@ const App = () => {
       .then((response) => response.json())
       .then((data) => {
         console.log("Dati API:", data);
-        debugger;
-        setArticles(data.posts);
+        if (Array.isArray(data)) {
+          setArticles(data);
+        } else if (data.posts && Array.isArray(data.posts)) {
+          setArticles(data.posts);
+        } else {
+          console.error("Formato della risposta inatteso:", data);
+        }
         if (data.length > 0) {
           const maxId = Math.max(...data.map((article) => article.id));
           setIdCounter(maxId + 1);
@@ -50,7 +54,6 @@ const App = () => {
         category: formData.category,
         published: formData.published,
       };
-      console.log(articles);
       setArticles([...articles, newArticle]);
       setFormData({
         title: "",
@@ -143,7 +146,7 @@ const App = () => {
                   className="btn btn-danger btn-sm"
                   onClick={() => deleteArticle(article.id)}
                 >
-                  <FaTrash />
+                  Elimina
                 </button>
               </div>
               {article.image && (
@@ -176,3 +179,4 @@ const App = () => {
 };
 
 export default App;
+
