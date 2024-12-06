@@ -1,125 +1,178 @@
 import React, { useState, useEffect } from "react";
-console.log(`ok server`);
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const port = 3000;
-app.use(express.static("public"));
-app.use(cors());
-app.use(express.json());
-const articlesRouter = require("./routers/articles");
 
-app.get("/", (req, res) => {
-  res.send("Server del mio blog");
-});
-app.use("/posts", articlesRouter);
+import "bootstrap/dist/css/bootstrap.min.css";
 
-app.listen(port, () => {
-  console.log(`In ascolto su port  ${port}`);
-});
-function App() {
-  const [article, setArticle] = useState({
-    title: "",
-    content: "",
-    image: "",
-    category: "news",
-    isPublished: false,
-  });
-
+const App = () => {
   const [articles, setArticles] = useState([]);
+  const [formData, setFormData] = useState({
+    id: "",
+    title: "",
+    image: "",
+    content: "",
+    category: "",
+    published: false,
+  });
+  const [idCounter, setIdCounter] = useState(1);
 
-  // Gestisce i cambiamenti del form
+  useEffect(() => {
+    fetch("http://localhost:3000/posts")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Dati API:", data);
+        debugger;
+        setArticles(data.posts);
+        if (data.length > 0) {
+          const maxId = Math.max(...data.map((article) => article.id));
+          setIdCounter(maxId + 1);
+        }
+      })
+      .catch((error) => {
+        console.error("Errore nel recupero degli articoli:", error);
+      });
+  }, []);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setArticle({
-      ...article,
+    setFormData({
+      ...formData,
       [name]: type === "checkbox" ? checked : value,
     });
   };
 
-  // Aggiunge un articolo alla lista
-  const addArticle = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (article.title.trim() !== "" && article.content.trim() !== "") {
-      setArticles([...articles, article]); // Aggiunge l'articolo alla lista
-      setArticle({
+    if (formData.title && formData.content && formData.category) {
+      const newArticle = {
+        id: idCounter,
+        title: formData.title,
+        image: formData.image,
+        content: formData.content,
+        category: formData.category,
+        published: formData.published,
+      };
+      console.log(articles);
+      setArticles([...articles, newArticle]);
+      setFormData({
         title: "",
-        content: "",
         image: "",
-        category: "news",
-        isPublished: false,
-      }); // Resetta il form
+        content: "",
+        category: "",
+        published: false,
+      });
+      setIdCounter(idCounter + 1);
     }
   };
 
-  // Rimuove un articolo dalla lista
-  const removeArticle = (indexToRemove) => {
-    setArticles(articles.filter((_, index) => index !== indexToRemove));
+  const deleteArticle = (id) => {
+    setArticles(articles.filter((article) => article.id !== id));
   };
 
   return (
-    <>
-      <form onSubmit={addArticle}>
-        <input
-          type="text"
-          name="title"
-          value={article.title}
-          onChange={handleChange}
-          placeholder="Titolo"
-        />
-        <textarea
-          name="content"
-          value={article.content}
-          onChange={handleChange}
-          placeholder="Contenuto"
-        />
-        <input
-          type="text"
-          name="image"
-          value={article.image}
-          onChange={handleChange}
-          placeholder="URL Immagine"
-        />
-        <select
-          name="category"
-          value={article.category}
-          onChange={handleChange}
-        >
-          <option value="news">News</option>
-          <option value="tech">Tech</option>
-          <option value="lifestyle">Lifestyle</option>
-        </select>
-        <label>
-          Pubblicare?
+    <div className="container mt-5">
+      <h1 className="text-center">Gestore per Articoli di Blog</h1>
+      <form onSubmit={handleSubmit} className="mb-4">
+        <div className="mb-3">
+          <label className="form-label">Titolo</label>
           <input
-            type="checkbox"
-            name="isPublished"
-            checked={article.isPublished}
+            type="text"
+            className="form-control"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Immagine (URL)</label>
+          <input
+            type="text"
+            className="form-control"
+            name="image"
+            value={formData.image}
             onChange={handleChange}
           />
-        </label>
-        <button type="submit">Aggiungi Articolo</button>
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Contenuto</label>
+          <textarea
+            className="form-control"
+            name="content"
+            value={formData.content}
+            onChange={handleChange}
+            required
+          ></textarea>
+        </div>
+        <div className="mb-3">
+          <label className="form-label">Categoria</label>
+          <input
+            type="text"
+            className="form-control"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <div className="form-check">
+            <input
+              type="checkbox"
+              className="form-check-input"
+              name="published"
+              checked={formData.published}
+              onChange={handleChange}
+            />
+            <label className="form-check-label">Pubblicato</label>
+          </div>
+        </div>
+        <button type="submit" className="btn btn-primary">
+          Aggiungi Articolo
+        </button>
       </form>
 
-      {/* Lista degli articoli */}
-      <ul>
-        {articles.map((art, index) => (
-          <li key={index}>
-            <h3>{art.title}</h3>
-            <p>{art.content}</p>
-            {art.image && (
-              <img src={art.image} alt={art.title} style={{ width: "100px" }} />
-            )}
-            <p>Categoria: {art.category}</p>
-            <p>Pubblicato: {art.isPublished ? "Sì" : "No"}</p>
-            <button onClick={() => removeArticle(index)}>
-              <i className="fa-solid fa-trash"></i> Rimuovi
-            </button>
-          </li>
-        ))}
-      </ul>
-    </>
+      {articles.length > 0 ? (
+        <ul className="list-group">
+          {articles.map((article) => (
+            <li
+              key={article.id}
+              className="list-group-item d-flex flex-column align-items-start"
+            >
+              <div className="d-flex w-100 justify-content-between">
+                <h5>{article.title}</h5>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => deleteArticle(article.id)}
+                >
+                  <FaTrash />
+                </button>
+              </div>
+              {article.image && (
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  className="img-fluid mt-2"
+                  style={{ maxHeight: "200px" }}
+                />
+              )}
+              <p className="mt-3">{article.content}</p>
+              <span className="badge bg-secondary">
+                Categoria: {article.category}
+              </span>
+              <span
+                className={`badge ${
+                  article.published ? "bg-success" : "bg-warning"
+                } mt-2`}
+              >
+                {article.published ? "Pubblicato" : "Bozza"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-center mt-4">Nessun articolo inserito</p>
+      )}
+    </div>
   );
-}
+};
 
 export default App;
